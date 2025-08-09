@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Wrapper to run tg.py using python from .venv
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_PY="$SCRIPT_DIR/.venv/bin/python"
+TG_PY="$SCRIPT_DIR/tg.py"
+
+if [ ! -x "$VENV_PY" ]; then
+  echo "Python interpreter not found in .venv. Please create a virtual environment and install dependencies."
+  exit 1
+fi
+
+exec "$VENV_PY" "$TG_PY" "$@"

@@ -28,16 +28,33 @@ Create a `config.json` file in the same directory as the script with the followi
 - `gemini_prompt` (optional) customizes the prompt for the AI summary.
 
 ## Installation
-Install the required Python packages:
+
+### 1. Create a virtual environment (recommended)
 
 ```
+python3 -m venv .venv
+```
+
+### 2. Activate the virtual environment and install dependencies
+
+```
+source .venv/bin/activate
 pip install -r install.txt
 ```
 
 ## Usage
 
+
+You can run the script using the provided shell wrapper (recommended):
+
 ```
-python tg.py <group_name> [--cutoff YYYY-MM-DD] [--limit N] [--summarize]
+./tg <group_name> [--cutoff YYYY-MM-DD] [--limit N] [--summarize]
+```
+
+Or directly with Python:
+
+```
+.venv/bin/python tg.py <group_name> [--cutoff YYYY-MM-DD] [--limit N] [--summarize]
 ```
 
 - `<group_name>`: Name of the Telegram group (as shown in your dialogs). If omitted, lists available groups.
