@@ -3,10 +3,9 @@
 Poniżej znajduje się podsumowanie wątków poruszonych w wiadomościach z grupy.
 
 **Tematy poruszone w wiadomościach:**
-*   Konwersja napięcia przemysłowego silnika (380V na 220V)
-*   Udostępnienie artykułu z Low-tech Magazine
-*   Projekt renowacji/tapicerowania elementów wyposażenia
-*   Tworzenie prototypu z materiału ripstop (rzutka)
+**Poruszone tematy:**
+1.  **Percepcja i reakcje społeczne na aktywność techniczną/niezwykłe zjawiska:** Dyskusja o tym, jak ludzie reagują na nietypowe widoki, czy powinni weryfikować informacje i oczekiwania dotyczące ich zdolności do myślenia.
+2.  **Kwestie organizacyjne/logistyczne:** Pytanie o dostępność węgla do grilla.
 
 ---
 

@@ -33,7 +33,19 @@ def markdown_to_html(md_text):
                 prev_blank = True
                 for line in lines:
                     stripped = line.lstrip()
-                    if (stripped.startswith('* ') or stripped.startswith('- ') or stripped.startswith('+ ')):
+                    # Detect bullet points (unordered)
+                    is_bullet = (
+                        stripped.startswith('* ') or stripped.startswith('- ') or stripped.startswith('+ ')
+                    )
+                    # Detect enumerated list (ordered)
+                    is_enum = False
+                    if len(stripped) > 2 and stripped[0].isdigit():
+                        # e.g. 1. or 2. or 10.
+                        dot_idx = stripped.find('.')
+                        if dot_idx > 0 and stripped[:dot_idx].isdigit() and stripped[dot_idx+1:dot_idx+2] == ' ':
+                            is_enum = True
+
+                    if is_bullet or is_enum:
                         if not prev_blank:
                             new_lines.append('')
                         new_lines.append(line)
