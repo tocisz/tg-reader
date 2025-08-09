@@ -67,7 +67,8 @@ def gemini_summarize(thread_output):
     except Exception as e:
         return f"[Gemini API error: {e}]"
 
-async def list_groups():
+
+async def list_groups_async(client):
     group_map = await get_group_map(client)
     if group_map:
         print("Available groups:")
@@ -76,6 +77,11 @@ async def list_groups():
     else:
         print("No groups found.")
 
+# Synchronous entrypoint for listing groups
+def list_groups():
+    with client:
+        client.loop.run_until_complete(list_groups_async(client))
+
 async def get_group_map(client):
     group_map = {}
     async for dialog in client.iter_dialogs():
@@ -83,7 +89,8 @@ async def get_group_map(client):
             group_map[dialog.name] = dialog.id
     return group_map
 
-async def main(group_name, cutoff_time=None, message_limit=1000, summarize=False):
+
+async def main_async(client, group_name, cutoff_time=None, message_limit=1000, summarize=False):
     group_map = await get_group_map(client)
     user_cache = load_user_cache()
     group_info = load_group_info()
@@ -94,7 +101,7 @@ async def main(group_name, cutoff_time=None, message_limit=1000, summarize=False
             if name.lower() == 'all':
                 continue
             print(f"\n=== Processing group: {name} ===")
-            await main(name, cutoff_time, message_limit, summarize)
+            await main_async(client, name, cutoff_time, message_limit, summarize)
         return
 
     if not group_name:
@@ -145,10 +152,10 @@ async def main(group_name, cutoff_time=None, message_limit=1000, summarize=False
                 print(f"No new messages in group '{group_name}'. Skipping.")
                 return
         idx += 1
- 
+
         if cutoff_dt and message.date < cutoff_dt:
             break
- 
+
         sender_id = message.sender_id
         timestamp = message.date.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -231,6 +238,13 @@ async def main(group_name, cutoff_time=None, message_limit=1000, summarize=False
         group_info[group_name]["last_message_date"] = last_message_date.isoformat()
         save_group_info(group_info)
 
+# Synchronous entrypoint for CLI usage
+def main(group_name, cutoff_time=None, message_limit=1000, summarize=False):
+    with client:
+        client.loop.run_until_complete(
+            main_async(client, group_name, cutoff_time, message_limit, summarize)
+        )
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Telegram group message fetcher")
@@ -240,8 +254,7 @@ if __name__ == "__main__":
     parser.add_argument("--summarize", action="store_true", help="Summarize messages using Gemini model from Google")
     args = parser.parse_args()
 
-    with client:
-        if not args.group_name:
-            client.loop.run_until_complete(list_groups())
-        else:
-            client.loop.run_until_complete(main(args.group_name, args.cutoff_time, args.message_limit, args.summarize))
+    if not args.group_name:
+        list_groups()
+    else:
+        main(args.group_name, args.cutoff_time, args.message_limit, args.summarize)

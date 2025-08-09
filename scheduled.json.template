@@ -1,0 +1,22 @@
+{
+  "tg_args": {
+    "group_name": "all",
+    "cutoff_time": null,
+    "message_limit": 1000,
+    "summarize": true
+  },
+  "email_address": "your@email.com",
+  "cloud_files": [
+    "user_cache.json",
+    "group_info.json",
+    "telegram.session"
+  ],
+  "provider": {
+    "type": "mock",
+    "aws": {
+      "s3_bucket": "your-s3-bucket-name",
+      "ses_sender": "verified-sender@email.com",
+      "ses_region": "us-east-1"
+    }
+  }
+}

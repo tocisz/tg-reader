@@ -1,4 +1,7 @@
-chats/*
+chats
+__pycache__
+lambda_build
+lambda_package.zip
 *.json
 *.session
 *.session-journal
