@@ -22,7 +22,33 @@ def extract_title_and_body(md_path):
 def markdown_to_html(md_text):
     try:
         import markdown
-        return markdown.markdown(md_text)
+
+        class MarkdownPreprocessor(markdown.preprocessors.Preprocessor):
+            """
+            Preprocess markdown to ensure bullet points are recognized by markdown parser.
+            Implements the markdown Preprocessor API: run(lines) -> list[str]
+            """
+            def run(self, lines):
+                new_lines = []
+                prev_blank = True
+                for line in lines:
+                    stripped = line.lstrip()
+                    if (stripped.startswith('* ') or stripped.startswith('- ') or stripped.startswith('+ ')):
+                        if not prev_blank:
+                            new_lines.append('')
+                        new_lines.append(line)
+                        prev_blank = False
+                    else:
+                        new_lines.append(line)
+                        prev_blank = (stripped == '')
+                return new_lines
+
+        class PreExt(markdown.extensions.Extension):
+            def extendMarkdown(self, md):
+                md.preprocessors.register(MarkdownPreprocessor(md), 'fix_bullets', 27)
+
+        return markdown.markdown(md_text, extensions=[PreExt()])
+
     except ImportError:
         # Fallback: wrap in <pre>
         return f"<pre>{md_text}</pre>"
