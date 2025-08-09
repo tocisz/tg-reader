@@ -211,14 +211,14 @@ async def main(group_name, cutoff_time=None, message_limit=1000, summarize=False
         if not GEMINI_API_KEY or not GEMINI_MODEL:
             print("Gemini API key or model not set in config.json. Skipping summarization.")
         else:
-            print("\nSummarizing with Gemini...")
+            print("\nSummarizing with LLM...")
             summary = gemini_summarize(thread_output)
-            print("\nGemini summary:\n")
+            print("\nSummary:\n")
             print(summary)
             # Save summary to markdown file in chats subdirectory
             if last_message_date:
                 with open(summary_filename, "w", encoding="utf-8") as f:
-                    f.write(f"# Gemini Summary for {group_name} ({date_str})\n\n")
+                    f.write(f"# Summary for {group_name} ({date_str})\n\n")
                     f.write(summary)
 
     # Save user cache and group info at the end

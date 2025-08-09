@@ -1,3 +1,4 @@
 chats/*
 *.json
 *.session
+*.session-journal
