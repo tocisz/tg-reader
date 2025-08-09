@@ -6,6 +6,7 @@ import argparse
 
 from telethon import TelegramClient
 from datetime import datetime
+from datetime import timezone
 from collections import defaultdict
 import google.generativeai as genai
 
@@ -66,15 +67,35 @@ def gemini_summarize(thread_output):
     except Exception as e:
         return f"[Gemini API error: {e}]"
 
+async def list_groups():
+    group_map = await get_group_map(client)
+    if group_map:
+        print("Available groups:")
+        for name, chat_id in group_map.items():
+            print(f"- {name}: {chat_id}")
+    else:
+        print("No groups found.")
 
-async def main(group_name, cutoff_time=None, message_limit=100, summarize=False):
+async def get_group_map(client):
     group_map = {}
-    user_cache = load_user_cache()
-    group_info = load_group_info()
-
     async for dialog in client.iter_dialogs():
         if dialog.is_group:
             group_map[dialog.name] = dialog.id
+    return group_map
+
+async def main(group_name, cutoff_time=None, message_limit=1000, summarize=False):
+    group_map = await get_group_map(client)
+    user_cache = load_user_cache()
+    group_info = load_group_info()
+
+    # Special handling for group_name == 'all'
+    if group_name == 'all':
+        for name in group_map:
+            if name.lower() == 'all':
+                continue
+            print(f"\n=== Processing group: {name} ===")
+            await main(name, cutoff_time, message_limit, summarize)
+        return
 
     if not group_name:
         print("Group name is required.")
@@ -93,6 +114,14 @@ async def main(group_name, cutoff_time=None, message_limit=100, summarize=False)
 
     # Use last message date from group_info as default cutoff if not provided
     last_date_str = group_info.get(group_name, {}).get("last_message_date")
+    last_dt = None
+    try:
+        last_dt = datetime.fromisoformat(last_date_str)
+        if last_dt.tzinfo is None:
+            last_dt = last_dt.replace(tzinfo=timezone.utc)
+    except Exception:
+        pass
+
     if not cutoff_time and last_date_str:
         cutoff_time = last_date_str
 
@@ -102,16 +131,24 @@ async def main(group_name, cutoff_time=None, message_limit=100, summarize=False)
             cutoff_dt = datetime.fromisoformat(cutoff_time)
             # If cutoff_dt is naive, make it UTC-aware
             if cutoff_dt.tzinfo is None:
-                from datetime import timezone
                 cutoff_dt = cutoff_dt.replace(tzinfo=timezone.utc)
         except Exception:
             print("Invalid cutoff time format. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS")
             return
 
     last_message_date = None
+    idx = 0
     async for message in client.iter_messages(group_id, limit=message_limit):
+        # Compare with date from group_info.json
+        if idx == 0:
+            if last_dt and message.date == last_dt:
+                print(f"No new messages in group '{group_name}'. Skipping.")
+                return
+        idx += 1
+ 
         if cutoff_dt and message.date < cutoff_dt:
             break
+ 
         sender_id = message.sender_id
         timestamp = message.date.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -144,8 +181,6 @@ async def main(group_name, cutoff_time=None, message_limit=100, summarize=False)
             threads[msg['reply_to']].append(msg)
         else:
             threads[msg['id']].append(msg)
-
-
 
     # Prepare thread output as string
     thread_lines = []
@@ -201,21 +236,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Telegram group message fetcher")
     parser.add_argument("group_name", nargs="?", default=None, help="Name of the Telegram group (if omitted, lists groups)")
     parser.add_argument("--cutoff", dest="cutoff_time", default=None, help="Cutoff time (ISO format, e.g. 2024-01-01 or 2024-01-01T12:00:00)")
-    parser.add_argument("--limit", dest="message_limit", type=int, default=100, help="Message limit (default 100)")
+    parser.add_argument("--limit", dest="message_limit", type=int, default=1000, help="Message limit (default 1000)")
     parser.add_argument("--summarize", action="store_true", help="Summarize messages using Gemini model from Google")
     args = parser.parse_args()
-
-    async def list_groups():
-        group_map = {}
-        async for dialog in client.iter_dialogs():
-            if dialog.is_group:
-                group_map[dialog.name] = dialog.id
-        if group_map:
-            print("Available groups:")
-            for name, chat_id in group_map.items():
-                print(f"- {name}: {chat_id}")
-        else:
-            print("No groups found.")
 
     with client:
         if not args.group_name:
