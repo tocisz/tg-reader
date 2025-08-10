@@ -79,5 +79,16 @@ This will fetch up to 200 messages from "My Group" since August 1, 2025, print a
 - If you run without a group name, it will list all available groups.
 - The Gemini summary requires a valid API key and model.
 
+## AWS Lambda Deployment
+
+You can deploy the summarizer to AWS Lambda for scheduled, serverless operation. See [`AWS.md`](./AWS.md) for a full step-by-step deployment guide, including configuration, SES setup, and troubleshooting.
+
+**Important:**
+- You must first run the summarizer locally to generate the `telegram.session` file, then upload it to your S3 bucket as described in `AWS.md`.
+- The deployment script (`deploy_aws.sh`) automates most AWS setup, but you must confirm SES email verification and upload your session file manually.
+
+For advanced configuration, scheduling, and troubleshooting, refer to [`AWS.md`](./AWS.md).
+
 ---
+
 MIT License

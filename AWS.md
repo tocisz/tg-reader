@@ -47,6 +47,18 @@ This will:
 - Set Lambda environment variables
 - Schedule the Lambda to run daily at 4 a.m. (see below)
 
+### 2.5. Upload Your telegram.session File to S3
+
+After running the summarizer locally at least once, you will have a `telegram.session` file in your project directory. This file is required for Telegram API authentication in Lambda.
+
+Upload it to your S3 bucket (created by the deploy script) with:
+
+```
+aws s3 cp telegram.session s3://<your-s3-bucket-name>/telegram.session
+```
+
+Replace `<your-s3-bucket-name>` with the actual bucket name output by the script.
+
 ### 3. Schedule Lambda for 4 a.m. Daily
 
 By default, the script uses `cron(0 4 * * ? *)`. To change it edit the schedule expression in `deploy_aws.sh`, e.g.:
