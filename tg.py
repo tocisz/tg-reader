@@ -94,30 +94,33 @@ async def get_group_map(client: Any) -> dict:
 
 async def main_async(
     client: Any, group_name: str, cutoff_time: Optional[str] = None, message_limit: int = 1000, summarize: bool = False, silent: bool = False
-) -> None:
+) -> list[str]:
     group_map = await get_group_map(client)
     user_cache = load_user_cache()
     group_info = load_group_info()
 
     # Special handling for group_name == 'all'
     if group_name == 'all':
+        created_files = []
         for name in group_map:
             if name.lower() == 'all':
                 continue
             print(f"\n=== Processing group: {name} ===")
-            await main_async(client, name, cutoff_time, message_limit, summarize, silent)
-        return
+            files = await main_async(client, name, cutoff_time, message_limit, summarize, silent)
+            if files:
+                created_files.extend(files)
+        return created_files
 
     if not group_name:
         print("Group name is required.")
-        return
+        return []
 
     group_id = group_map.get(group_name)
     if not group_id:
         print(f"Group '{group_name}' not found. Available groups:")
         for name in group_map:
             print(f"- {name}")
-        return
+        return []
 
     print(f"Fetching messages from group: {group_id}")
 
@@ -125,18 +128,9 @@ async def main_async(
 
     # Use last message date from group_info as default cutoff if not provided
     last_date_str = group_info.get(group_name, {}).get("last_message_date")
-    last_dt = None
-    try:
-        last_dt = datetime.fromisoformat(last_date_str)
-        if last_dt.tzinfo is None:
-            last_dt = last_dt.replace(tzinfo=timezone.utc)
-    except Exception:
-        pass
-
     if not cutoff_time and last_date_str:
         cutoff_time = last_date_str
 
-    cutoff_dt = None
     if cutoff_time:
         try:
             cutoff_dt = datetime.fromisoformat(cutoff_time)
@@ -148,11 +142,12 @@ async def main_async(
             return
 
     last_message_date = None
+    created_md_files = []
     idx = 0
     async for message in client.iter_messages(group_id, limit=message_limit):
         # Compare with date from group_info.json
         if idx == 0:
-            if last_dt and message.date == last_dt:
+            if cutoff_dt and message.date == cutoff_dt:
                 print(f"No new messages in group '{group_name}'. Skipping.")
                 return
         idx += 1
@@ -233,6 +228,7 @@ async def main_async(
                 with open(summary_filename, "w", encoding="utf-8") as f:
                     f.write(f"# Summary for {group_name} ({date_str})\n\n")
                     f.write(summary)
+                created_md_files.append(summary_filename)
 
     # Save user cache and group info at the end
     save_user_cache(user_cache)
@@ -244,12 +240,14 @@ async def main_async(
         group_info[group_name]["last_message_date"] = last_message_date.isoformat()
         save_group_info(group_info)
 
+    return created_md_files
+
 # Synchronous entrypoint for CLI usage
 def main(
     group_name: str, cutoff_time: Optional[str] = None, message_limit: int = 1000, summarize: bool = False, silent: bool = False
-) -> None:
+) -> list[str]:
     with client:
-        client.loop.run_until_complete(
+        return client.loop.run_until_complete(
             main_async(client, group_name, cutoff_time, message_limit, summarize, silent)
         )
 

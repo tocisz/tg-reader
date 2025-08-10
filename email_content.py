@@ -1,11 +1,6 @@
-import glob
 import os
 from typing import List, Tuple
 from multipart import EmailMessageData, EmailAttachment
-
-def get_markdown_files(chats_dir: str = "chats") -> List[str]:
-    return sorted(glob.glob(os.path.join(chats_dir, "*.md")))
-
 
 def extract_title_and_body(md_path: str) -> Tuple[str, str]:
     with open(md_path, "r", encoding="utf-8") as f:
@@ -68,8 +63,7 @@ def markdown_to_html(md_text: str) -> str:
         return f"<pre>{md_text}</pre>"
 
 
-def generate_emails_from_chats(chats_dir: str = "chats") -> List[EmailMessageData]:
-    md_files = get_markdown_files(chats_dir)
+def generate_emails_from_files(md_files: List[str]) -> List[EmailMessageData]:
     emails = []
     for md_path in md_files:
         title, md_body = extract_title_and_body(md_path)

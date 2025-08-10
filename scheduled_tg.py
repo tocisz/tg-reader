@@ -45,10 +45,10 @@ def download_files() -> None:
 
 
 # Step 2: Run tg logic (synchronous entrypoint)
-def run_tg() -> None:
+def run_tg() -> list[str]:
     # Import tg after files are downloaded
     import tg
-    tg.main(
+    return tg.main(
         tg_args.get('group_name'),
         tg_args.get('cutoff_time'),
         tg_args.get('message_limit', 1000),
@@ -58,9 +58,9 @@ def run_tg() -> None:
 
 
 # Step 3: Send email with results
-def send_emails() -> None:
-    if email_address:
-        emails = email_content.generate_emails_from_chats("chats")
+def send_emails(md_files: list[str]) -> None:
+    if email_address and md_files:
+        emails = email_content.generate_emails_from_files(md_files)
         for msg_data in emails:
             # Set recipient (and sender if needed)
             msg_data.recipient = email_address
@@ -78,8 +78,8 @@ def upload_files() -> None:
 
 def main() -> None:
     download_files()
-    run_tg()
-    send_emails()
+    md_files = run_tg()
+    send_emails(md_files)
     upload_files()
 
 
