@@ -90,7 +90,7 @@ async def get_group_map(client):
     return group_map
 
 
-async def main_async(client, group_name, cutoff_time=None, message_limit=1000, summarize=False):
+async def main_async(client, group_name, cutoff_time=None, message_limit=1000, summarize=False, silent=False):
     group_map = await get_group_map(client)
     user_cache = load_user_cache()
     group_info = load_group_info()
@@ -200,7 +200,8 @@ async def main_async(client, group_name, cutoff_time=None, message_limit=1000, s
             thread_lines.append("</thread>\n")
 
     thread_output = "\n".join(thread_lines)
-    print(thread_output)
+    if not silent:
+       print(thread_output)
 
     # Save thread output to file in chats subdirectory
     if last_message_date:
@@ -220,8 +221,9 @@ async def main_async(client, group_name, cutoff_time=None, message_limit=1000, s
         else:
             print("\nSummarizing with LLM...")
             summary = gemini_summarize(thread_output)
-            print("\nSummary:\n")
-            print(summary)
+            if not silent:
+                print("\nSummary:\n")
+                print(summary)
             # Save summary to markdown file in chats subdirectory
             if last_message_date:
                 with open(summary_filename, "w", encoding="utf-8") as f:
@@ -239,12 +241,11 @@ async def main_async(client, group_name, cutoff_time=None, message_limit=1000, s
         save_group_info(group_info)
 
 # Synchronous entrypoint for CLI usage
-def main(group_name, cutoff_time=None, message_limit=1000, summarize=False):
+def main(group_name, cutoff_time=None, message_limit=1000, summarize=False, silent=False):
     with client:
         client.loop.run_until_complete(
-            main_async(client, group_name, cutoff_time, message_limit, summarize)
+            main_async(client, group_name, cutoff_time, message_limit, summarize, silent)
         )
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Telegram group message fetcher")
@@ -252,9 +253,10 @@ if __name__ == "__main__":
     parser.add_argument("--cutoff", dest="cutoff_time", default=None, help="Cutoff time (ISO format, e.g. 2024-01-01 or 2024-01-01T12:00:00)")
     parser.add_argument("--limit", dest="message_limit", type=int, default=1000, help="Message limit (default 1000)")
     parser.add_argument("--summarize", action="store_true", help="Summarize messages using Gemini model from Google")
+    parser.add_argument("--silent", action="store_true", help="Suppress output to standard output")
     args = parser.parse_args()
 
     if not args.group_name:
         list_groups()
     else:
-        main(args.group_name, args.cutoff_time, args.message_limit, args.summarize)
+        main(args.group_name, args.cutoff_time, args.message_limit, args.summarize, args.silent)

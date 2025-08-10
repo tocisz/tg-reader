@@ -53,7 +53,8 @@ def run_tg():
         tg_args.get('group_name'),
         tg_args.get('cutoff_time'),
         tg_args.get('message_limit', 1000),
-        tg_args.get('summarize', False)
+        tg_args.get('summarize', False),
+        silent=True
     )
 
 
