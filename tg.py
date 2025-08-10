@@ -9,6 +9,8 @@ from datetime import datetime
 from datetime import timezone
 from collections import defaultdict
 import google.generativeai as genai
+from typing import Any, Optional
+
 
 # These example values won't work. You must get your own api_id and
 # api_hash from https://my.telegram.org, under API Development.
@@ -26,29 +28,29 @@ GEMINI_PROMPT = config.get('gemini_prompt', 'Summarize the following Telegram gr
 
 USER_CACHE_FILE = "user_cache.json"
 GROUP_INFO_FILE = "group_info.json"
-def load_group_info():
+def load_group_info() -> dict:
     if not os.path.exists(GROUP_INFO_FILE):
         return {}
     with open(GROUP_INFO_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def save_group_info(info):
+def save_group_info(info: dict) -> None:
     with open(GROUP_INFO_FILE, "w", encoding="utf-8") as f:
         json.dump(info, f, ensure_ascii=False, indent=2)
 
-def load_user_cache():
+def load_user_cache() -> dict:
     """Load sender ID → username mapping."""
     if not os.path.exists(USER_CACHE_FILE):
         return {}
     with open(USER_CACHE_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def save_user_cache(cache):
+def save_user_cache(cache: dict) -> None:
     """Save sender ID → username mapping."""
     with open(USER_CACHE_FILE, "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
-async def get_username(sender):
+async def get_username(sender: str) -> str:
     """Get a display name for the sender."""
     if sender.username:
         return f"@{sender.username}"
@@ -56,7 +58,7 @@ async def get_username(sender):
 
 client = TelegramClient('telegram', api_id, api_hash)
 
-def gemini_summarize(thread_output):
+def gemini_summarize(thread_output: str) -> str:
     """Summarize the thread output using Gemini API via google-genai."""
     prompt = GEMINI_PROMPT + "\n\n" + thread_output
     try:
@@ -68,7 +70,7 @@ def gemini_summarize(thread_output):
         return f"[Gemini API error: {e}]"
 
 
-async def list_groups_async(client):
+async def list_groups_async(client: str) -> None:
     group_map = await get_group_map(client)
     if group_map:
         print("Available groups:")
@@ -78,11 +80,11 @@ async def list_groups_async(client):
         print("No groups found.")
 
 # Synchronous entrypoint for listing groups
-def list_groups():
+def list_groups() -> None:
     with client:
         client.loop.run_until_complete(list_groups_async(client))
 
-async def get_group_map(client):
+async def get_group_map(client: Any) -> dict:
     group_map = {}
     async for dialog in client.iter_dialogs():
         if dialog.is_group:
@@ -90,7 +92,9 @@ async def get_group_map(client):
     return group_map
 
 
-async def main_async(client, group_name, cutoff_time=None, message_limit=1000, summarize=False, silent=False):
+async def main_async(
+    client: Any, group_name: str, cutoff_time: Optional[str] = None, message_limit: int = 1000, summarize: bool = False, silent: bool = False
+) -> None:
     group_map = await get_group_map(client)
     user_cache = load_user_cache()
     group_info = load_group_info()
@@ -241,7 +245,9 @@ async def main_async(client, group_name, cutoff_time=None, message_limit=1000, s
         save_group_info(group_info)
 
 # Synchronous entrypoint for CLI usage
-def main(group_name, cutoff_time=None, message_limit=1000, summarize=False, silent=False):
+def main(
+    group_name: str, cutoff_time: Optional[str] = None, message_limit: int = 1000, summarize: bool = False, silent: bool = False
+) -> None:
     with client:
         client.loop.run_until_complete(
             main_async(client, group_name, cutoff_time, message_limit, summarize, silent)

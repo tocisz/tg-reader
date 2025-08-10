@@ -1,4 +1,3 @@
-# All imports
 import os
 import shutil
 import json
@@ -37,7 +36,7 @@ else:
 
 
 # Step 1: Download important files from cloud storage
-def download_files():
+def download_files() -> None:
     for file_key in cloud_files:
         try:
             provider.download_files([file_key], dest=file_key)
@@ -46,7 +45,7 @@ def download_files():
 
 
 # Step 2: Run tg logic (synchronous entrypoint)
-def run_tg():
+def run_tg() -> None:
     # Import tg after files are downloaded
     import tg
     tg.main(
@@ -59,7 +58,7 @@ def run_tg():
 
 
 # Step 3: Send email with results
-def send_emails():
+def send_emails() -> None:
     if email_address:
         emails = email_content.generate_emails_from_chats("chats")
         for msg_data in emails:
@@ -69,7 +68,7 @@ def send_emails():
 
 
 # Step 4: Upload important files back to cloud storage (mocked)
-def upload_files():
+def upload_files() -> None:
     for file_key in cloud_files:
         try:
             provider.upload_files([file_key])
@@ -77,7 +76,7 @@ def upload_files():
             provider.upload_files([file_key])
 
 
-def main():
+def main() -> None:
     download_files()
     run_tg()
     send_emails()
