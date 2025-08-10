@@ -1,5 +1,4 @@
 import boto3
-import os
 from provider_contract import ProviderContract
 from botocore.exceptions import ClientError
 
@@ -27,16 +26,20 @@ class AWSProvider(ProviderContract):
             except ClientError as e:
                 print(f"[AWS] Error uploading {file_key}: {e}")
 
-    def send_email(self, address, subject, body):
+    def send_email(self, msg_data):
+        from multipart import build_multipart_message
+        # Fill sender/recipient if not set
+        msg_data.sender = self.ses_sender
+        if not msg_data.recipient:
+            raise ValueError("Recipient must be set in EmailMessageData")
+        # Build raw MIME message
+        mime_msg = build_multipart_message(msg_data)
         try:
-            response = self.ses.send_email(
+            response = self.ses.send_raw_email(
                 Source=self.ses_sender,
-                Destination={"ToAddresses": [address]},
-                Message={
-                    "Subject": {"Data": subject},
-                    "Body": {"Html": {"Data": body}}
-                }
+                Destinations=[msg_data.recipient],
+                RawMessage={"Data": mime_msg.as_string()}
             )
-            print(f"[AWS] Email sent to {address} with subject '{subject}'. MessageId: {response['MessageId']}")
+            print(f"[AWS] Email sent to {msg_data.recipient} with subject '{msg_data.subject}'. MessageId: {response['MessageId']}")
         except ClientError as e:
             print(f"[AWS] Error sending email: {e}")

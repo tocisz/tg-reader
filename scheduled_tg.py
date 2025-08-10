@@ -57,16 +57,15 @@ def run_tg():
     )
 
 
-# Step 3: Send email with results (mocked)
+# Step 3: Send email with results
 def send_emails():
     if email_address:
         emails = email_content.generate_emails_from_chats("chats")
         for email in emails:
-            provider.send_email(
-                email_address,
-                subject=email["title"],
-                body=email["html"]
-            )
+            msg_data = email["msg_data"]
+            # Set recipient (and sender if needed)
+            msg_data.recipient = email_address
+            provider.send_email(msg_data)
 
 
 # Step 4: Upload important files back to cloud storage (mocked)

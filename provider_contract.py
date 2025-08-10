@@ -10,5 +10,8 @@ class ProviderContract(ABC):
         pass
 
     @abstractmethod
-    def send_email(self, address, subject, body):
+    def send_email(self, msg_data):
+        """
+        Send an email using the provided EmailMessageData object (see multipart.py).
+        """
         pass

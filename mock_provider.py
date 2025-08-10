@@ -7,5 +7,5 @@ class MockProvider(ProviderContract):
     def upload_files(self, file_list):
         print(f"[MOCK] Uploading files to cloud: {file_list}")
 
-    def send_email(self, address, subject, body):
-        print(f"[MOCK] Sending email to {address} with subject '{subject}' and body: {body}")
+    def send_email(self, msg_data):
+        print(f"[MOCK] Sending email to {msg_data.recipient} with subject '{msg_data.subject}' and body: {msg_data.html or msg_data.text}")

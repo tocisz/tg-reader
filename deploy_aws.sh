@@ -14,6 +14,11 @@ REGION="eu-west-1"
 SES_EMAIL="cichymail@gmail.com"  # Must be a verified SES sender
 
 # === ARGUMENT PARSING ===
+if [[ $# -eq 0 ]]; then
+  echo "Usage: $0 [install|redeploy]"
+  exit 1
+fi
+
 if [[ "$1" == "install" ]]; then
   echo "[tg-reader] Full install (all resources)"
   DO_INSTALL=1
@@ -22,9 +27,6 @@ elif [[ "$1" == "redeploy" ]]; then
   echo "[tg-reader] Redeploy Lambda code only"
   DO_INSTALL=0
   DO_REDEPLOY=1
-else
-  echo "Usage: $0 [install|redeploy]"
-  exit 1
 fi
 
 if [[ "$DO_INSTALL" == "1" ]]; then
