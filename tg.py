@@ -101,7 +101,7 @@ async def main_async(client, group_name, cutoff_time=None, message_limit=1000, s
             if name.lower() == 'all':
                 continue
             print(f"\n=== Processing group: {name} ===")
-            await main_async(client, name, cutoff_time, message_limit, summarize)
+            await main_async(client, name, cutoff_time, message_limit, summarize, silent)
         return
 
     if not group_name:

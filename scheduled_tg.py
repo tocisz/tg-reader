@@ -86,10 +86,11 @@ def main():
 
 
 def lambda_handler(event, context):
-    # Copy "config.json" to /tmp for Lambda execution
-    shutil.copy('config.json', '/tmp/config.json')
-    # Change working directory to /tmp at the start so all file I/O is Lambda-safe
-    os.chdir('/tmp')
+    if os.getcwd() != '/tmp':
+        # Copy "config.json" to /tmp for Lambda execution
+        shutil.copy('config.json', '/tmp/config.json')
+        # Change working directory to /tmp at the start so all file I/O is Lambda-safe
+        os.chdir('/tmp')
 
     main()
 
