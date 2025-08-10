@@ -24,7 +24,7 @@ def markdown_to_html(md_text):
     try:
         import markdown
 
-        class MarkdownPreprocessor(markdown.preprocessors.Preprocessor):
+        class FixBulletsAndEnumerations(markdown.preprocessors.Preprocessor):
             """
             Preprocess markdown to ensure bullet points are recognized by markdown parser.
             Implements the markdown Preprocessor API: run(lines) -> list[str]
@@ -56,11 +56,11 @@ def markdown_to_html(md_text):
                         prev_blank = (stripped == '')
                 return new_lines
 
-        class PreExt(markdown.extensions.Extension):
+        class AddPreprocessors(markdown.extensions.Extension):
             def extendMarkdown(self, md):
-                md.preprocessors.register(MarkdownPreprocessor(md), 'fix_bullets', 27)
+                md.preprocessors.register(FixBulletsAndEnumerations(md), 'fix_bullets', 27)
 
-        return markdown.markdown(md_text, extensions=[PreExt()])
+        return markdown.markdown(md_text, extensions=[AddPreprocessors()])
 
     except ImportError:
         # Fallback: wrap in <pre>
