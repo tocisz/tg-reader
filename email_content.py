@@ -1,6 +1,6 @@
 import glob
 import os
-from multipart import EmailMessageData, EmailAttachment, build_multipart_message
+from multipart import EmailMessageData, EmailAttachment
 
 def get_markdown_files(chats_dir="chats"):
     return sorted(glob.glob(os.path.join(chats_dir, "*.md")))
@@ -83,11 +83,5 @@ def generate_emails_from_chats(chats_dir="chats"):
             html=html_body,
             attachments=attachments
         )
-        emails.append({
-            "title": title,
-            "html": html_body,
-            "file": md_path,
-            "msg_data": msg_data,
-            "multipart": build_multipart_message(msg_data)
-        })
+        emails.append(msg_data)
     return emails

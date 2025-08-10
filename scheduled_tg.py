@@ -62,8 +62,7 @@ def run_tg():
 def send_emails():
     if email_address:
         emails = email_content.generate_emails_from_chats("chats")
-        for email in emails:
-            msg_data = email["msg_data"]
+        for msg_data in emails:
             # Set recipient (and sender if needed)
             msg_data.recipient = email_address
             provider.send_email(msg_data)
