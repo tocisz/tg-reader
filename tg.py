@@ -131,6 +131,7 @@ async def main_async(
     if not cutoff_time and last_date_str:
         cutoff_time = last_date_str
 
+    cutoff_dt = None
     if cutoff_time:
         try:
             cutoff_dt = datetime.fromisoformat(cutoff_time)
@@ -139,7 +140,7 @@ async def main_async(
                 cutoff_dt = cutoff_dt.replace(tzinfo=timezone.utc)
         except Exception:
             print("Invalid cutoff time format. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS")
-            return
+            return []
 
     last_message_date = None
     created_md_files = []
@@ -147,12 +148,12 @@ async def main_async(
     async for message in client.iter_messages(group_id, limit=message_limit):
         # Compare with date from group_info.json
         if idx == 0:
-            if cutoff_dt and message.date == cutoff_dt:
+            if cutoff_dt is not None and message.date == cutoff_dt:
                 print(f"No new messages in group '{group_name}'. Skipping.")
-                return
+                return []
         idx += 1
 
-        if cutoff_dt and message.date < cutoff_dt:
+        if cutoff_dt is not None and message.date < cutoff_dt:
             break
 
         sender_id = message.sender_id
