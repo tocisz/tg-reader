@@ -7,9 +7,9 @@ import argparse
 from telethon import TelegramClient
 from datetime import datetime
 from datetime import timezone
-from collections import defaultdict
 import google.generativeai as genai
 from typing import Any, Optional
+from thread_grouping import group_threads
 
 
 # These example values won't work. You must get your own api_id and
@@ -181,13 +181,8 @@ async def main_async(
         if last_message_date is None or message.date > last_message_date:
             last_message_date = message.date
 
-    # Group into threads
-    threads = defaultdict(list)
-    for msg in reversed(messages):
-        if msg['reply_to']:
-            threads[msg['reply_to']].append(msg)
-        else:
-            threads[msg['id']].append(msg)
+    # Group into threads using shared logic
+    threads = group_threads(messages)
 
     # Prepare thread output as string
     thread_lines = []
