@@ -190,7 +190,8 @@ async def main_async(
         if len(msgs) > 1:
             thread_lines.append("\n<thread>")
         for m in msgs:
-            thread_lines.append(f"[{m['timestamp']}] {m['name']}: {m['text']}")
+            indent = '> ' * m.get('depth', 0)
+            thread_lines.append(f"{indent}[{m['timestamp']}] {m['name']}: {m['text']}")
         if len(msgs) > 1:
             thread_lines.append("</thread>\n")
 

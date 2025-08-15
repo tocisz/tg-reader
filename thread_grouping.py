@@ -7,20 +7,19 @@ def group_threads(messages):
         if msg['reply_to']:
             child_map[msg['reply_to']].append(msg['id'])
 
-    def collect_thread(root_id):
-        thread = []
-        stack = [root_id]
-        while stack:
-            curr_id = stack.pop()
-            msg = id_to_msg.get(curr_id)
-            if msg:
-                thread.append(msg)
-                stack.extend(child_map.get(curr_id, []))
-        thread.sort(key=lambda m: m['timestamp'])
-        return thread
+    def dfs(curr_id, thread, depth=0):
+        msg = id_to_msg.get(curr_id)
+        if msg:
+            msg = dict(msg)  # Copy to avoid mutating input
+            msg['depth'] = depth
+            thread.append(msg)
+            for child_id in child_map.get(curr_id, []):
+                dfs(child_id, thread, depth + 1)
 
     threads = {}
     for msg in messages:
         if not msg['reply_to']:
-            threads[msg['id']] = collect_thread(msg['id'])
+            thread = []
+            dfs(msg['id'], thread, depth=0)
+            threads[msg['id']] = thread
     return threads
