@@ -27,6 +27,9 @@ elif [[ "$1" == "redeploy" ]]; then
   echo "[tg-reader] Redeploy Lambda code only"
   DO_INSTALL=0
   DO_REDEPLOY=1
+else
+  echo "Usage: $0 [install|redeploy]"
+  exit 1
 fi
 
 if [[ "$DO_INSTALL" == "1" ]]; then
