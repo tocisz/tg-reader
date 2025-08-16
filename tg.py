@@ -190,13 +190,9 @@ async def main_async(
     # Prepare thread output as string
     thread_lines = []
     for root_id, msgs in threads.items():
-        if len(msgs) > 1:
-            thread_lines.append("\n<thread>")
         for m in msgs:
-            indent = '> ' * m.get('depth', 0)
+            indent = '>' * m.get('depth', 0) + " " if m.get('depth', 0) else ''
             thread_lines.append(f"{indent}[{m['timestamp']}] {m['name']}: {m['text']}")
-        if len(msgs) > 1:
-            thread_lines.append("</thread>\n")
 
     thread_output = "\n".join(thread_lines)
     if not silent:
