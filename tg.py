@@ -181,6 +181,9 @@ async def main_async(
         if last_message_date is None or message.date > last_message_date:
             last_message_date = message.date
 
+    # Messages come from newest to oldest, so we reverse them
+    messages.reverse()
+
     # Group into threads using shared logic
     threads = group_threads(messages)
 
